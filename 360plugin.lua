@@ -88,7 +88,7 @@ local init_dfov = 0.0
 
 
 local doit = 0.0
-local res  = 3.0
+local res  = 5.0
 local dragging = false
 
 local smoothMouse = true
