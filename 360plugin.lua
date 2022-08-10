@@ -88,16 +88,17 @@ local init_dfov = 0.0
 
 
 local doit = 0.0
-local res  = 1.0
+local res  = 3.0
 local dragging = false
 
-local smoothMouse = true
+local smoothMouse = false
 
 local scaling   = 'linear'
 
 local in_stereo = 'sbs'
-local out_stereo = '2d'
-local sarOutput = 1.0
+local out_stereo = 'sbs'
+local out_stereo_mode = 'half'
+local sarOutput = 0.75
 
 local h_flip    = '0'
 local in_flip   = ''
@@ -229,11 +230,11 @@ end
 
 local updateFilters = function ()
 	if not filterIsOn then
-		mp.command_native_async({"no-osd", "vf", "add", string.format("@vrrev:%sv360=%s:%s:reset_rot=1:in_stereo=%s:out_stereo=%s:id_fov=%s:d_fov=%.3f:yaw=%.3f:pitch=%s:roll=%.3f:w=%s*192.0:h=%.3f*108.0:h_flip=%s:interp=%s,setsar=sar=%.3f",in_flip,inputProjection,outputProjection,in_stereo,out_stereo,idfov,dfov,yaw,pitch,roll,res,res,h_flip,scaling,sarOutput)}, updateComplete)
+		mp.command_native_async({"no-osd", "vf", "add", string.format("@vrrev:%sv360=%s:%s:in_stereo=%s:out_stereo=%s:id_fov=%s:d_fov=%.3f:yaw=%.3f:pitch=%s:roll=%.3f:w=%s*384.0:h=%.3f*216.0:h_flip=%s:interp=%s,setsar=sar=%.3f",in_flip,inputProjection,outputProjection,in_stereo,out_stereo,idfov,dfov,yaw,pitch,roll,res,res,h_flip,scaling,sarOutput)}, updateComplete)
 		filterIsOn=true
 	elseif not updateAwaiting then
 		updateAwaiting=true
-		mp.command_native_async({"no-osd", "vf", "set", string.format("@vrrev:%sv360=%s:%s:reset_rot=1:in_stereo=%s:out_stereo=%s:id_fov=%s:d_fov=%.3f:yaw=%.3f:pitch=%s:roll=%.3f:w=%s*192.0:h=%.3f*108.0:h_flip=%s:interp=%s,setsar=sar=%.3f",in_flip,inputProjection,outputProjection,in_stereo,out_stereo,idfov,dfov,yaw,pitch,roll,res,res,h_flip,scaling,sarOutput)}, updateComplete)
+		mp.command_native_async({"no-osd", "vf", "set", string.format("@vrrev:%sv360=%s:%s:in_stereo=%s:out_stereo=%s:id_fov=%s:d_fov=%.3f:yaw=%.3f:pitch=%s:roll=%.3f:w=%s*384.0:h=%.3f*216.0:h_flip=%s:interp=%s,setsar=sar=%.3f",in_flip,inputProjection,outputProjection,in_stereo,out_stereo,idfov,dfov,yaw,pitch,roll,res,res,h_flip,scaling,sarOutput)}, updateComplete)
 	end
 	writeHeadPositionChange()
 end
@@ -303,7 +304,7 @@ end
 local increment_res = function(inc)
 	res = res+inc
 	res = math.max(math.min(res, 20), 1)
-	mp.osd_message(string.format("Out-Width: %spx", res*108.0), 0.5)
+	mp.osd_message(string.format("Out-Width: %spx", res*216.0), 0.5)
 	updateFilters()
 end
 
@@ -365,11 +366,17 @@ local toggleSmoothMouse  = function()
 end
 
 local switchoutputsbs = function()
-	if out_stereo == 'sbs' then
+	if out_stereo == 'sbs' and out_stereo_mode == 'half' then
 		out_stereo = '2d'
 		sarOutput = 1.0
+		out_stereo_mode = 'full'
+	elseif out_stereo == 'sbs' and out_stereo_mode == 'full' then
+		out_stereo = 'sbs'
+		out_stereo_mode = 'half'
+		sarOutput = 0.75
 	elseif out_stereo ~= 'sbs' then
 		out_stereo = 'sbs'
+		out_stereo_mode = 'full'
 		sarOutput = 0.5
 	end
 end
@@ -503,7 +510,7 @@ local closeCurrentLog = function()
 		file_object:write('# Suggested ffmpeg conversion command:\n')
 
 		local closingCommandComment = string.format(
-			'ffmpeg -y -ss %s -i "%s" -to %s -copyts -filter_complex "%sv360=%s:%s:in_stereo=%s:out_stereo=%s:reset_rot=1:id_fov=%s:d_fov=%.3f:yaw=%.3f:pitch=%.3f:roll=%.3f:w=1920.0:h=1080.0:interp=cubic:h_flip=%s,setsar=sar=%.3f,sendcmd=filename=%s_3dViewHistory_%s.txt" -avoid_negative_ts make_zero -preset slower -crf 17 "%s_2d_%03d.mp4"',
+			'ffmpeg -y -ss %s -i "%s" -to %s -copyts -filter_complex "%sv360=%s:%s:in_stereo=%s:out_stereo=%s:id_fov=%s:d_fov=%.3f:yaw=%.3f:pitch=%.3f:roll=%.3f:w=3840.0:h=2160.0:interp=cubic:h_flip=%s,setsar=sar=%.3f,sendcmd=filename=%s_3dViewHistory_%s.txt" -avoid_negative_ts make_zero -preset slower -crf 17 "%s_2d_%03d.mp4"',
 			startTime,filename,finalTimeStamp,in_flip,inputProjection,outputProjection,in_stereo,out_stereo,idfov,init_dfov,init_yaw,init_pitch,init_roll,h_flip,videofilename,fileobjectNumber,videofilename,fileobjectNumber,sarOutput
 		)
 
