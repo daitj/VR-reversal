@@ -100,7 +100,7 @@ local in_stereo  = 'sbs'
 local outputMode = 'sbs-hw'
 local out_stereo = 'sbs'
 local anaglyph_filter = ""
-local sarOutput = 0.75
+local sarOutput = 0.5
 
 local h_flip    = '0'
 local in_flip   = ''
@@ -390,7 +390,7 @@ local switchoutputsbs = function()
 		out_stereo = 'sbs'
 		outputMode = 'sbs2l:arcg'
 		anaglyph_filter=",stereo3d=sbs2l:arcg"
-		sarOutput = 0.75
+		sarOutput = 0.5
 		mp.osd_message("Red cyan gray/monochrome anaglyph output mode")
 	elseif outputMode == 'sbs2l:arcg' then
 		out_stereo = 'sbs'
